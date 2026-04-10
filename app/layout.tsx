@@ -24,7 +24,7 @@ const schoolbell = Schoolbell({
 
 export const metadata: Metadata = {
   title: {
-    default: "Olivia Tran - UX & Product Design",
+    default: "Olivia Tran - Product Design",
     template: "%s",
   },
   description:
