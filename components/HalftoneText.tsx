@@ -240,6 +240,14 @@ function fontPxFromWidth(width: number): number {
 
 export function HalftoneText() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const canvasSizeRef = useRef<{
+    wPhys: number;
+    hPhys: number;
+    wLogic: number;
+    hLogic: number;
+    dpr: number;
+  } | null>(null);
   const measureRef = useRef<HTMLDivElement>(null);
   const indexRef = useRef(0);
   const morphRef = useRef<{
@@ -289,30 +297,60 @@ export function HalftoneText() {
     }
   }, []);
 
+  const ensureCanvas = useCallback(
+    (logicalW: number, logicalH: number, dpr: number) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return null;
+      const wPhys = Math.max(1, Math.round(logicalW * dpr));
+      const hPhys = Math.max(1, Math.round(logicalH * dpr));
+      const prev = canvasSizeRef.current;
+      if (
+        !prev ||
+        prev.wPhys !== wPhys ||
+        prev.hPhys !== hPhys ||
+        prev.wLogic !== logicalW ||
+        prev.hLogic !== logicalH ||
+        prev.dpr !== dpr
+      ) {
+        canvas.width = wPhys;
+        canvas.height = hPhys;
+        canvas.style.width = `${logicalW}px`;
+        canvas.style.height = `${logicalH}px`;
+        canvas.style.maxWidth = "100%";
+        canvasSizeRef.current = { wPhys, hPhys, wLogic: logicalW, hLogic: logicalH, dpr };
+      }
+      if (!ctxRef.current) {
+        ctxRef.current = canvas.getContext("2d", { willReadFrequently: true });
+      }
+      return { canvas, ctx: ctxRef.current, wPhys, hPhys };
+    },
+    [],
+  );
+
   const paintStatic = useCallback(
     (phrase: string) => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
       const dpr = Math.min(window.devicePixelRatio ?? 1, 3);
       const hLog = hLogicFor(fontPx);
       const textW = measureTextWidth(phrase, fontPx);
       const logicalW = textW + PAD;
-      const wPhys = Math.round(logicalW * dpr);
-      const hPhys = Math.round(hLog * dpr);
 
       const mask = renderTextMask(phrase, logicalW, hLog, dpr, fontPx);
-      canvas.width = wPhys;
-      canvas.height = hPhys;
-      canvas.style.width = `${logicalW}px`;
-      canvas.style.height = `${hLog}px`;
-      canvas.style.maxWidth = "100%";
-
-      const ctx = canvas.getContext("2d", { willReadFrequently: true });
-      if (!ctx) return;
+      const out = ensureCanvas(logicalW, hLog, dpr);
+      if (!out?.ctx) return;
       const c = phraseDotColor(phrase);
-      drawHalftoneFrame(ctx, mask.data, mask.data, wPhys, hPhys, dpr, null, c, c);
+      drawHalftoneFrame(
+        out.ctx,
+        mask.data,
+        mask.data,
+        out.wPhys,
+        out.hPhys,
+        dpr,
+        null,
+        c,
+        c,
+      );
     },
-    [fontPx]
+    [ensureCanvas, fontPx],
   );
 
   const scheduleNextMorphAfterDwell = useCallback(() => {
@@ -329,33 +367,24 @@ export function HalftoneText() {
   }, [clearDwellTimeout]);
 
   const runMorphFrame = useCallback((now: number) => {
-    const canvas = canvasRef.current;
     const job = morphRef.current;
-    if (!canvas || !job) return;
+    if (!job) return;
 
     const dpr = Math.min(window.devicePixelRatio ?? 1, 3);
     const { fromData, toData, wLogic, hLogic, start, fromColor, toColor } =
       job;
-    const wPhys = Math.round(wLogic * dpr);
-    const hPhys = Math.round(hLogic * dpr);
     const elapsed = now - start;
     const t = Math.min(1, elapsed / MORPH_MS);
 
-    canvas.width = wPhys;
-    canvas.height = hPhys;
-    canvas.style.width = `${wLogic}px`;
-    canvas.style.height = `${hLogic}px`;
-    canvas.style.maxWidth = "100%";
-
-    const ctx = canvas.getContext("2d", { willReadFrequently: true });
-    if (!ctx) return;
+    const out = ensureCanvas(wLogic, hLogic, dpr);
+    if (!out?.ctx) return;
 
     drawHalftoneFrame(
-      ctx,
+      out.ctx,
       fromData.data,
       toData.data,
-      wPhys,
-      hPhys,
+      out.wPhys,
+      out.hPhys,
       dpr,
       t,
       fromColor,
@@ -375,7 +404,7 @@ export function HalftoneText() {
       paintStatic(nextPhrase);
       scheduleNextMorphAfterDwell();
     }
-  }, [paintStatic, scheduleNextMorphAfterDwell]);
+  }, [ensureCanvas, paintStatic, scheduleNextMorphAfterDwell]);
 
   const startMorph = useCallback(
     (fromPhrase: string, toPhrase: string) => {
@@ -388,6 +417,7 @@ export function HalftoneText() {
 
       const fromData = renderTextMask(fromPhrase, wLogic, hLog, dpr, fontPx);
       const toData = renderTextMask(toPhrase, wLogic, hLog, dpr, fontPx);
+      ensureCanvas(wLogic, hLog, dpr);
 
       morphRef.current = {
         fromData,
@@ -403,7 +433,7 @@ export function HalftoneText() {
         runMorphFrameRef.current(t),
       );
     },
-    [stopRaf, clearDwellTimeout, fontPx]
+    [stopRaf, clearDwellTimeout, ensureCanvas, fontPx],
   );
 
   useEffect(() => {
