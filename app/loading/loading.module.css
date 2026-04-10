@@ -1,0 +1,161 @@
+/* Loading canvas - white field & type (portfolio theme) */
+.canvas {
+  min-height: 100dvh;
+  width: 100%;
+  background-color: #ffffff;
+}
+
+@keyframes petalIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes flowerWrapIn {
+  from {
+    transform: translateY(4px);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes nameIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes barFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+.flowerWrap {
+  animation: flowerWrapIn 0.4s ease forwards;
+  animation-delay: 0.5s;
+}
+
+.pixel {
+  opacity: 0;
+  animation: petalIn 0.1s ease forwards;
+}
+
+.pixel:nth-child(1) {
+  animation-delay: 0.05s;
+}
+.pixel:nth-child(2) {
+  animation-delay: 0.12s;
+}
+.pixel:nth-child(3) {
+  animation-delay: 0.18s;
+}
+.pixel:nth-child(4) {
+  animation-delay: 0.24s;
+}
+.pixel:nth-child(5) {
+  animation-delay: 0.3s;
+}
+.pixel:nth-child(6) {
+  animation-delay: 0.36s;
+}
+.pixel:nth-child(7) {
+  animation-delay: 0.4s;
+}
+.pixel:nth-child(8) {
+  animation-delay: 0.44s;
+}
+
+.name {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  font-weight: 600;
+  font-size: clamp(3rem, 12vw, 5rem);
+  line-height: 1;
+  color: #1a35c5;
+  opacity: 0;
+  animation: nameIn 0.5s ease forwards;
+  animation-delay: 0.65s;
+}
+
+.progressBlock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2rem;
+  opacity: 0;
+  animation: fadeIn 0.4s ease forwards;
+  animation-delay: 0.9s;
+}
+
+.track {
+  width: 220px;
+  height: 3px;
+  border-radius: 0;
+  background: rgba(26, 53, 197, 0.15);
+  overflow: hidden;
+}
+
+.fill {
+  height: 100%;
+  width: 100%;
+  background: #f5c800;
+  transform: scaleX(0);
+  transform-origin: left center;
+  animation: barFill 2.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation-delay: 1s;
+}
+
+.barLabel {
+  margin: 0;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 4px;
+  color: rgba(26, 53, 197, 0.45);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flowerWrap,
+  .pixel,
+  .name,
+  .progressBlock {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .flowerWrap {
+    transform: none;
+  }
+
+  .fill {
+    animation: none;
+    transform: scaleX(1);
+  }
+}

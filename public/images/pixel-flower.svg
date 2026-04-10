@@ -1,0 +1,10 @@
+<svg width="60" height="84" viewBox="0 0 60 84" xmlns="http://www.w3.org/2000/svg">
+<rect x="24" y="0" width="12" height="12" fill="#F5C800"/> <!-- top petal -->
+<rect x="12" y="12" width="12" height="12" fill="#F5C800"/> <!-- left petal -->
+<rect x="24" y="12" width="12" height="12" fill="#E8301A"/> <!-- red center -->
+<rect x="36" y="12" width="12" height="12" fill="#F5C800"/> <!-- right petal -->
+<rect x="24" y="24" width="12" height="12" fill="#F5C800"/> <!-- bottom petal -->
+<rect x="24" y="36" width="12" height="12" fill="#2D8A2D"/> <!-- stem 1 -->
+<rect x="24" y="48" width="12" height="12" fill="#2D8A2D"/> <!-- stem 2 -->
+<rect x="24" y="60" width="12" height="12" fill="#2D8A2D"/> <!-- stem 3 -->
+</svg>
