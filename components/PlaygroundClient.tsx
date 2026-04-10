@@ -36,6 +36,13 @@ function defaultFilter(
   return firstNonEmptyTheme(by);
 }
 
+/** Prefer sheep/pasture hero (`public/images/playground/playground-09.png`) when present. */
+function defaultFeaturedSrc(images: string[]): string | null {
+  if (images.length === 0) return null;
+  const preferred = images.find((src) => /\/playground-09\.png$/i.test(src));
+  return preferred ?? images[0]!;
+}
+
 export function PlaygroundClient({ imagesByTheme, imagesAll }: Props) {
   const [filter, setFilter] = useState<PlaygroundFilter>(() =>
     defaultFilter(imagesAll, imagesByTheme),
@@ -46,9 +53,12 @@ export function PlaygroundClient({ imagesByTheme, imagesAll }: Props) {
     return imagesByTheme[filter] ?? [];
   }, [filter, imagesAll, imagesByTheme]);
 
-  const [featuredSrc, setFeaturedSrc] = useState<string | null>(
-    () => images[0] ?? null,
-  );
+  const [featuredSrc, setFeaturedSrc] = useState<string | null>(() => {
+    const f = defaultFilter(imagesAll, imagesByTheme);
+    const initial =
+      f === "all" ? imagesAll : imagesByTheme[f] ?? [];
+    return defaultFeaturedSrc(initial);
+  });
 
   useEffect(() => {
     if (images.length === 0) {
@@ -56,7 +66,7 @@ export function PlaygroundClient({ imagesByTheme, imagesAll }: Props) {
       return;
     }
     setFeaturedSrc((prev) =>
-      prev && images.includes(prev) ? prev : images[0]!,
+      prev && images.includes(prev) ? prev : defaultFeaturedSrc(images)!,
     );
   }, [images]);
 
