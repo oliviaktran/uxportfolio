@@ -1,0 +1,17 @@
+---
+description: Short meaningful git commit messages when pushing
+alwaysApply: true
+---
+
+# Git push and commit messages
+
+When the user asks to push, commit and push, or says **command push** (or similar):
+
+1. **Inspect the diff** (`git status`, `git diff`) so the message reflects what actually changed.
+2. Use a **short but meaningful** commit subject (about 50–72 characters when possible), imperative mood, specific to the change — not generic text like "Update files" or "Fix stuff".
+3. **Good examples:** `Tighten playground image grid on mobile`, `Point resume link to public PDF`, `Soften hero flower motion in reduced-motion`.
+4. **Bad examples:** `Changes`, `Updates`, `Fix`, `WIP`.
+5. If several unrelated changes are staged, either **split commits** or use a subject that honestly summarizes the theme (e.g. `Polish about stack and nav contrast`).
+6. Then run `git add` as needed, `git commit -m "…"`, and `git push`.
+
+Optional body: only when the subject alone would be unclear; keep it brief.
