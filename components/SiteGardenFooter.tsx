@@ -22,7 +22,7 @@ const SITE_GARDEN_FLOATERS = [
 export function SiteGardenFooter() {
   return (
     <footer
-      className="relative min-h-[min(38vh,400px)] w-full shrink-0 border-t border-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]"
+      className="site-garden-footer relative min-h-[min(38vh,400px)] w-full shrink-0 border-t border-[color-mix(in_srgb,var(--color-primary)_12%,transparent)] text-[var(--color-primary)]"
       aria-label="Garden"
     >
       <HeroFloatingFlowers floaters={SITE_GARDEN_FLOATERS} />

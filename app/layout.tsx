@@ -41,7 +41,9 @@ export default function RootLayout({
       lang="en"
       className={`h-full antialiased ${roboto.variable} ${robotoSerif.variable} ${schoolbell.variable}`}
     >
-      <body className={`min-h-full flex flex-col ${roboto.className}`}>
+      <body
+        className={`min-h-full flex flex-col cursor-red-circle ${roboto.className}`}
+      >
         {children}
       </body>
     </html>

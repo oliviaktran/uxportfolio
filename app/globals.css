@@ -44,6 +44,30 @@ body {
   line-height: 1.5;
 }
 
+/* Red circle cursor (accent red); fine-pointer only. Applied on body site-wide. */
+@media (pointer: fine) {
+  .cursor-red-circle {
+    cursor:
+      url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%2224%22%20height%3D%2224%22%20viewBox%3D%220%200%2024%2024%22%3E%3Ccircle%20cx%3D%2212%22%20cy%3D%2212%22%20r%3D%227%22%20fill%3D%22%23e8301a%22/%3E%3C/svg%3E")
+        12 12,
+      auto;
+  }
+
+  .cursor-red-circle * {
+    cursor: inherit !important;
+  }
+
+  /* Garden footer: default cursor so cloud + flower watering interaction works */
+  .cursor-red-circle .site-garden-footer,
+  .cursor-red-circle .site-garden-footer * {
+    cursor: auto !important;
+  }
+
+  .cursor-red-circle .site-garden-footer .flower-watering-hide-cursor {
+    cursor: none !important;
+  }
+}
+
 .font-serif-display {
   font-family: Georgia, "Times New Roman", serif;
 }

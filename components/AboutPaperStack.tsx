@@ -318,7 +318,7 @@ export function AboutPaperStack() {
 
   return (
     <section
-      className="relative flex min-h-[min(78vh,720px)] w-full items-center justify-center border-b border-[var(--color-grid-strong)] bg-[var(--background)] px-4 py-16 md:py-24"
+      className="relative flex min-h-[min(78vh,720px)] w-full items-center justify-center border-b border-[var(--color-grid-strong)] bg-[var(--background)] px-4 pt-16 pb-28 md:pt-24 md:pb-40"
       aria-label="About - photo stack"
     >
       <div
@@ -507,15 +507,17 @@ export function AboutPaperStack() {
           </div>
           </div>
         </div>
-        <a
-          href={ABOUT_RESUME_PDF}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Open resume PDF in a new tab"
-          className="mt-6 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)] underline decoration-black/20 underline-offset-4 transition-colors hover:decoration-[var(--color-primary)]"
-        >
-          RESUME PDF
-        </a>
+        {resumeRevealed ? (
+          <a
+            href={ABOUT_RESUME_PDF}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Open resume PDF in a new tab"
+            className="relative z-10 mt-16 shrink-0 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)] underline decoration-black/20 underline-offset-4 transition-colors hover:decoration-[var(--color-primary)] sm:mt-20 md:mt-24"
+          >
+            RESUME PDF
+          </a>
+        ) : null}
       </div>
     </section>
   );

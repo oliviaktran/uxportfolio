@@ -164,11 +164,10 @@ function FlowerInstance({
               ? `Decorative pixel flower, phase ${phase}. Activate to grow.`
               : "Decorative pixel flower, full bloom."
           }
-          className="relative flex cursor-default items-end justify-center outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-yellow)] focus-visible:ring-offset-2"
+          className={`relative flex cursor-default items-end justify-center outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-accent-yellow)] focus-visible:ring-offset-2${showCloud ? " flower-watering-hide-cursor" : ""}`}
           style={{
             width: hitW,
             height: hitH,
-            cursor: showCloud ? "none" : undefined,
           }}
           onMouseEnter={onEnter}
           onMouseLeave={onLeave}
