@@ -8,6 +8,9 @@ export const ABOUT_A4_COVER_IMAGE: string | null = "/about/a4-portrait.png";
 /** Resume image - `public/resume.png` (top under-sheet; vellum slides aside to reveal). */
 export const ABOUT_RESUME_IMAGE = "/resume.png";
 
+/** Resume PDF - `public/resume.pdf` (opened from the Resume tab in a new tab). */
+export const ABOUT_RESUME_PDF = "/resume.pdf";
+
 /** Back → front; `null` = gradient “Photo” placeholder. */
 export const ABOUT_STACK_IMAGE_SRCS: (string | null)[] = [
   null,
@@ -319,7 +322,7 @@ export function AboutPaperStack() {
       aria-label="About - photo stack"
     >
       <div
-        className="relative mx-auto"
+        className="relative mx-auto flex flex-col items-center"
         style={
           {
             perspective: "1050px",
@@ -504,6 +507,15 @@ export function AboutPaperStack() {
           </div>
           </div>
         </div>
+        <a
+          href={ABOUT_RESUME_PDF}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Open resume PDF in a new tab"
+          className="mt-6 font-mono text-[10px] font-semibold uppercase tracking-[0.2em] text-[var(--color-primary)] underline decoration-black/20 underline-offset-4 transition-colors hover:decoration-[var(--color-primary)]"
+        >
+          RESUME PDF
+        </a>
       </div>
     </section>
   );

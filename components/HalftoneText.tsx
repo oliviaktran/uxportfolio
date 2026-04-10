@@ -1,5 +1,6 @@
 "use client";
 
+import { usePrefersReducedMotion } from "@/lib/use-sync-media";
 import {
   useCallback,
   useEffect,
@@ -236,7 +237,8 @@ export function HalftoneText() {
   const startMorphRef = useRef<(from: string, to: string) => void>(() => {});
 
   const [displayPhrase, setDisplayPhrase] = useState<string>(PHRASES[0]);
-  const [motionOk, setMotionOk] = useState(true);
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const motionOk = !prefersReducedMotion;
 
   const clearDwellTimeout = useCallback(() => {
     if (dwellTimeoutRef.current) {
@@ -368,28 +370,11 @@ export function HalftoneText() {
   }, [paintStatic]);
 
   useEffect(() => {
-    const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setMotionOk(!mq.matches);
-    const onMq = () => {
-      const ok = !mq.matches;
-      setMotionOk(ok);
-      if (!ok) {
-        stopRaf();
-        morphRef.current = null;
-        if (dwellTimeoutRef.current) {
-          clearTimeout(dwellTimeoutRef.current);
-          dwellTimeoutRef.current = null;
-        }
-        paintStatic(PHRASES[indexRef.current]!);
-      }
-    };
-    mq.addEventListener("change", onMq);
-    return () => mq.removeEventListener("change", onMq);
-  }, [paintStatic, stopRaf]);
-
-  useEffect(() => {
     if (!motionOk) {
+      stopRaf();
+      morphRef.current = null;
       clearDwellTimeout();
+      paintStatic(PHRASES[indexRef.current]!);
       return;
     }
     scheduleNextMorphAfterDwell();
@@ -397,7 +382,13 @@ export function HalftoneText() {
       clearDwellTimeout();
       stopRaf();
     };
-  }, [motionOk, scheduleNextMorphAfterDwell, stopRaf, clearDwellTimeout]);
+  }, [
+    motionOk,
+    paintStatic,
+    stopRaf,
+    clearDwellTimeout,
+    scheduleNextMorphAfterDwell,
+  ]);
 
   useEffect(
     () => () => {
@@ -423,6 +414,7 @@ export function HalftoneText() {
             className="block align-middle"
             style={{ verticalAlign: "middle" }}
             aria-hidden
+            suppressHydrationWarning
           />
         </span>
       </div>

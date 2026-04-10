@@ -1,11 +1,11 @@
 "use client";
 
+import { siteNavLinkClass } from "@/lib/site-nav-styles";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 
-const navLinkClass =
-  "font-mono text-[14px] font-normal uppercase tracking-[0.1em] text-neutral-500 transition-colors hover:text-neutral-700";
+export { siteNavLinkClass, siteNavTypographyClass } from "@/lib/site-nav-styles";
 
 function NavLink({
   href,
@@ -19,7 +19,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`${navLinkClass} ${active ? "text-neutral-800" : ""}`}
+      className={`${siteNavLinkClass} ${active ? "text-neutral-800" : ""}`}
     >
       {children}
     </Link>
@@ -57,10 +57,7 @@ export function SiteNav() {
     <>
       <header className="relative z-50 border-b border-neutral-200/90 bg-white">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-6 px-6 py-4 md:px-12 md:py-5 lg:px-16">
-          <Link
-            href="/"
-            className="shrink-0 font-mono text-[14px] font-normal uppercase tracking-[0.1em] text-neutral-500 transition-colors hover:text-neutral-700"
-          >
+          <Link href="/" className={`shrink-0 ${siteNavLinkClass}`}>
             OLIVIA TRAN
           </Link>
 
@@ -83,7 +80,7 @@ export function SiteNav() {
           >
             <Link
               href="/#work"
-              className={`${navLinkClass} ${onWork ? "text-neutral-800" : ""}`}
+              className={`${siteNavLinkClass} ${onWork ? "text-neutral-800" : ""}`}
               onClick={onWorkNavClick}
             >
               Work

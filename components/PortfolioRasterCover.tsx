@@ -29,7 +29,6 @@ export function PortfolioRasterCover({
       className={className}
       decoding={priority ? "sync" : "async"}
       loading={priority ? "eager" : "lazy"}
-      {...(priority ? { fetchPriority: "high" as const } : {})}
       draggable={false}
     />
   );

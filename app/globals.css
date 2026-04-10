@@ -1033,4 +1033,24 @@ button.about-folder-tab-side:hover {
   .cursor-cube-shard {
     transform: none;
   }
+
+  .playground-featured-preview {
+    animation: none !important;
+  }
+}
+
+@keyframes playground-featured-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.playground-featured-preview {
+  transform-origin: top right;
+  animation: playground-featured-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
