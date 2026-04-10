@@ -66,7 +66,7 @@ export function PlaygroundClient({ imagesByTheme, imagesAll }: Props) {
         <div
           className={
             featuredSrc
-              ? "-translate-x-6 sm:-translate-x-10 md:-translate-x-14 lg:-translate-x-[4.5rem] xl:-translate-x-24"
+              ? "-translate-x-2 sm:-translate-x-10 md:-translate-x-14 lg:-translate-x-[4.5rem] xl:-translate-x-24"
               : undefined
           }
         >
@@ -124,7 +124,7 @@ export function PlaygroundClient({ imagesByTheme, imagesAll }: Props) {
       </div>
 
       {featuredSrc ? (
-        <div className="pointer-events-none absolute inset-x-0 top-8 z-[200]">
+        <div className="pointer-events-none absolute inset-x-0 top-16 z-[200] sm:top-10 md:top-8">
           {/*
             Row must stay pointer-events-none: a full-width flex box with default auto
             would sit above the carousel and steal every click in that band.

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Roboto, Roboto_Serif, Schoolbell } from "next/font/google";
 import "./globals.css";
 
@@ -29,6 +29,12 @@ export const metadata: Metadata = {
   },
   description:
     "Portfolio of Olivia Tran - UX design, research, and product design across internship, academic, and hackathon work.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({

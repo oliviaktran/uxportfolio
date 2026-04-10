@@ -29,6 +29,7 @@
 
 html {
   color-scheme: only light;
+  overflow-x: clip;
 }
 
 @media (prefers-reduced-motion: no-preference) {

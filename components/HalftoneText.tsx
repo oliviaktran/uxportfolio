@@ -20,8 +20,12 @@ const PHRASES = [
 
 const STEP = 2.5;
 const PAD = STEP * 4;
-const FONT_PX = 40;
-const H_LOGIC = FONT_PX + PAD;
+const FONT_PX_MIN = 22;
+const FONT_PX_MAX = 40;
+
+function hLogicFor(fontPx: number): number {
+  return fontPx + PAD;
+}
 /** Site primary (PRD) - matches --color-primary */
 const DOT_COLOR = "#1a35c5";
 /** Matches --color-accent-red */
@@ -46,7 +50,10 @@ function lerpColor(a: string, b: string, t: number): string {
 }
 const MONO_STACK =
   'ui-monospace, "Cascadia Code", "SFMono-Regular", "Courier New", monospace';
-const OFFSCREEN_FONT = `800 ${FONT_PX}px ${MONO_STACK}`;
+
+function offscreenFont(fontPx: number): string {
+  return `800 ${fontPx}px ${MONO_STACK}`;
+}
 
 /** Ignore near-white samples (background + antialias fringe). Mask is black ink on white - not alpha. */
 const INK_SKIP = 0.08;
@@ -63,11 +70,11 @@ function easeInOutQuad(t: number): number {
   return t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
 }
 
-function measureTextWidth(phrase: string): number {
+function measureTextWidth(phrase: string, fontPx: number): number {
   const c = document.createElement("canvas");
   const ctx = c.getContext("2d");
   if (!ctx) return 100;
-  ctx.font = OFFSCREEN_FONT;
+  ctx.font = offscreenFont(fontPx);
   return ctx.measureText(phrase).width;
 }
 
@@ -93,14 +100,15 @@ function fillHeartPath(ctx: CanvasRenderingContext2D): void {
 function drawHeartMaskInk(
   ctx: CanvasRenderingContext2D,
   logicalW: number,
-  logicalH: number
+  logicalH: number,
+  fontPx: number
 ): void {
   const availW = logicalW - PAD;
   const availH = logicalH - PAD;
   const scale = Math.min(availW / HEART_DESIGN_W, availH / HEART_DESIGN_H) * 0.94;
   const ox = PAD / 2;
-  const padY = (logicalH - FONT_PX) / 2;
-  const textCenterY = padY + FONT_PX * 0.48;
+  const padY = (logicalH - fontPx) / 2;
+  const textCenterY = padY + fontPx * 0.48;
   const oy = textCenterY - HEART_PATH_CY * scale;
 
   ctx.save();
@@ -115,7 +123,8 @@ function renderTextMask(
   phrase: string,
   logicalW: number,
   logicalH: number,
-  dpr: number
+  dpr: number,
+  fontPx: number
 ): ImageData {
   const wPhys = Math.max(1, Math.round(logicalW * dpr));
   const hPhys = Math.max(1, Math.round(logicalH * dpr));
@@ -131,13 +140,13 @@ function renderTextMask(
   ctx.fillRect(0, 0, logicalW, logicalH);
   ctx.fillStyle = "#000000";
   if (phrase === "heart") {
-    drawHeartMaskInk(ctx, logicalW, logicalH);
+    drawHeartMaskInk(ctx, logicalW, logicalH, fontPx);
   } else {
-    ctx.font = OFFSCREEN_FONT;
+    ctx.font = offscreenFont(fontPx);
     ctx.textBaseline = "alphabetic";
     const padX = PAD / 2;
-    const padY = (logicalH - FONT_PX) / 2;
-    const baseline = padY + FONT_PX * 0.82;
+    const padY = (logicalH - fontPx) / 2;
+    const baseline = padY + fontPx * 0.82;
     ctx.fillText(phrase, padX, baseline);
   }
   return ctx.getImageData(0, 0, wPhys, hPhys);
@@ -221,13 +230,23 @@ function drawHalftoneFrame(
   }
 }
 
+function fontPxFromWidth(width: number): number {
+  if (!Number.isFinite(width) || width <= 0) return FONT_PX_MAX;
+  return Math.min(
+    FONT_PX_MAX,
+    Math.max(FONT_PX_MIN, Math.round(width * 0.09)),
+  );
+}
+
 export function HalftoneText() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const measureRef = useRef<HTMLDivElement>(null);
   const indexRef = useRef(0);
   const morphRef = useRef<{
     fromData: ImageData;
     toData: ImageData;
     wLogic: number;
+    hLogic: number;
     start: number;
     fromColor: string;
     toColor: string;
@@ -235,10 +254,26 @@ export function HalftoneText() {
   const rafRef = useRef(0);
   const dwellTimeoutRef = useRef<number | null>(null);
   const startMorphRef = useRef<(from: string, to: string) => void>(() => {});
+  const runMorphFrameRef = useRef<(now: number) => void>(() => {});
 
   const [displayPhrase, setDisplayPhrase] = useState<string>(PHRASES[0]);
+  const [fontPx, setFontPx] = useState(FONT_PX_MAX);
   const prefersReducedMotion = usePrefersReducedMotion();
   const motionOk = !prefersReducedMotion;
+
+  useLayoutEffect(() => {
+    const el = measureRef.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width ?? el.getBoundingClientRect().width;
+      const next = fontPxFromWidth(w);
+      setFontPx((prev) => (prev === next ? prev : next));
+    });
+    ro.observe(el);
+    const w = el.getBoundingClientRect().width;
+    setFontPx(fontPxFromWidth(w));
+    return () => ro.disconnect();
+  }, []);
 
   const clearDwellTimeout = useCallback(() => {
     if (dwellTimeoutRef.current) {
@@ -259,23 +294,25 @@ export function HalftoneText() {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const dpr = Math.min(window.devicePixelRatio ?? 1, 3);
-      const textW = measureTextWidth(phrase);
+      const hLog = hLogicFor(fontPx);
+      const textW = measureTextWidth(phrase, fontPx);
       const logicalW = textW + PAD;
       const wPhys = Math.round(logicalW * dpr);
-      const hPhys = Math.round(H_LOGIC * dpr);
+      const hPhys = Math.round(hLog * dpr);
 
-      const mask = renderTextMask(phrase, logicalW, H_LOGIC, dpr);
+      const mask = renderTextMask(phrase, logicalW, hLog, dpr, fontPx);
       canvas.width = wPhys;
       canvas.height = hPhys;
       canvas.style.width = `${logicalW}px`;
-      canvas.style.height = `${H_LOGIC}px`;
+      canvas.style.height = `${hLog}px`;
+      canvas.style.maxWidth = "100%";
 
       const ctx = canvas.getContext("2d", { willReadFrequently: true });
       if (!ctx) return;
       const c = phraseDotColor(phrase);
       drawHalftoneFrame(ctx, mask.data, mask.data, wPhys, hPhys, dpr, null, c, c);
     },
-    []
+    [fontPx]
   );
 
   const scheduleNextMorphAfterDwell = useCallback(() => {
@@ -297,16 +334,18 @@ export function HalftoneText() {
     if (!canvas || !job) return;
 
     const dpr = Math.min(window.devicePixelRatio ?? 1, 3);
-    const { fromData, toData, wLogic, start, fromColor, toColor } = job;
+    const { fromData, toData, wLogic, hLogic, start, fromColor, toColor } =
+      job;
     const wPhys = Math.round(wLogic * dpr);
-    const hPhys = Math.round(H_LOGIC * dpr);
+    const hPhys = Math.round(hLogic * dpr);
     const elapsed = now - start;
     const t = Math.min(1, elapsed / MORPH_MS);
 
     canvas.width = wPhys;
     canvas.height = hPhys;
     canvas.style.width = `${wLogic}px`;
-    canvas.style.height = `${H_LOGIC}px`;
+    canvas.style.height = `${hLogic}px`;
+    canvas.style.maxWidth = "100%";
 
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
@@ -324,7 +363,9 @@ export function HalftoneText() {
     );
 
     if (t < 1) {
-      rafRef.current = requestAnimationFrame(runMorphFrame);
+      rafRef.current = requestAnimationFrame((t) =>
+        runMorphFrameRef.current(t),
+      );
     } else {
       morphRef.current = null;
       const nextIdx = (indexRef.current + 1) % PHRASES.length;
@@ -340,34 +381,45 @@ export function HalftoneText() {
     (fromPhrase: string, toPhrase: string) => {
       clearDwellTimeout();
       const dpr = Math.min(window.devicePixelRatio ?? 1, 3);
-      const wFrom = measureTextWidth(fromPhrase) + PAD;
-      const wTo = measureTextWidth(toPhrase) + PAD;
+      const hLog = hLogicFor(fontPx);
+      const wFrom = measureTextWidth(fromPhrase, fontPx) + PAD;
+      const wTo = measureTextWidth(toPhrase, fontPx) + PAD;
       const wLogic = Math.max(wFrom, wTo);
 
-      const fromData = renderTextMask(fromPhrase, wLogic, H_LOGIC, dpr);
-      const toData = renderTextMask(toPhrase, wLogic, H_LOGIC, dpr);
+      const fromData = renderTextMask(fromPhrase, wLogic, hLog, dpr, fontPx);
+      const toData = renderTextMask(toPhrase, wLogic, hLog, dpr, fontPx);
 
       morphRef.current = {
         fromData,
         toData,
         wLogic,
+        hLogic: hLog,
         start: performance.now(),
         fromColor: phraseDotColor(fromPhrase),
         toColor: phraseDotColor(toPhrase),
       };
       stopRaf();
-      rafRef.current = requestAnimationFrame(runMorphFrame);
+      rafRef.current = requestAnimationFrame((t) =>
+        runMorphFrameRef.current(t),
+      );
     },
-    [runMorphFrame, stopRaf, clearDwellTimeout]
+    [stopRaf, clearDwellTimeout, fontPx]
   );
 
   useEffect(() => {
     startMorphRef.current = startMorph;
   }, [startMorph]);
 
+  useEffect(() => {
+    runMorphFrameRef.current = runMorphFrame;
+  }, [runMorphFrame]);
+
   useLayoutEffect(() => {
+    morphRef.current = null;
+    stopRaf();
+    clearDwellTimeout();
     paintStatic(PHRASES[indexRef.current]!);
-  }, [paintStatic]);
+  }, [fontPx, paintStatic, stopRaf, clearDwellTimeout]);
 
   useEffect(() => {
     if (!motionOk) {
@@ -398,14 +450,17 @@ export function HalftoneText() {
     [clearDwellTimeout, stopRaf]
   );
 
+  const heroMonoClass =
+    "font-mono tracking-tight text-[var(--color-primary)] text-[clamp(1.375rem,4.5vw+0.5rem,2.5rem)]";
+
   return (
-    <div className="font-bold text-[var(--color-primary)]">
-      <p className="font-mono text-[40px] leading-[1.35] tracking-tight text-[var(--color-primary)]">
-        Hi, im olivia
-      </p>
-      <div className="mt-5 flex max-w-full flex-nowrap items-center gap-0 font-mono text-[40px] leading-none tracking-tight text-[var(--color-primary)]">
+    <div ref={measureRef} className="max-w-full font-bold text-[var(--color-primary)]">
+      <p className={`${heroMonoClass} leading-[1.35]`}>Hi, im olivia</p>
+      <div
+        className={`${heroMonoClass} mt-4 flex max-w-full flex-col items-start gap-2 leading-none sm:mt-5 sm:flex-row sm:flex-wrap sm:items-baseline md:flex-nowrap md:items-center`}
+      >
         <span className="shrink-0 whitespace-pre">I design with </span>
-        <span className="relative min-w-0 shrink-0 leading-none">
+        <span className="relative min-w-0 shrink leading-none">
           <span className="sr-only" aria-live="polite">
             {displayPhrase}
           </span>

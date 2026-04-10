@@ -3,7 +3,7 @@
 import { siteNavLinkClass } from "@/lib/site-nav-styles";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export { siteNavLinkClass, siteNavTypographyClass } from "@/lib/site-nav-styles";
 
@@ -53,6 +53,24 @@ export function SiteNav() {
   const onPlayground = pathname === "/playground";
   const onAbout = pathname === "/about";
 
+  useEffect(() => {
+    if (!mobileOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [mobileOpen]);
+
+  useEffect(() => {
+    if (!mobileOpen) return;
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setMobileOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [mobileOpen]);
+
   return (
     <>
       <header className="relative z-50 border-b border-neutral-200/90 bg-white">
@@ -98,11 +116,16 @@ export function SiteNav() {
       {mobileOpen ? (
         <div
           id="mobile-nav"
-          className="fixed inset-0 z-40 flex flex-col bg-white pt-20 md:hidden"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Site menu"
+          className="fixed inset-0 z-40 flex flex-col bg-white/98 pt-20 backdrop-blur-sm md:hidden"
+          onClick={() => setMobileOpen(false)}
         >
           <nav
             className="flex flex-col gap-8 px-8 py-8 font-mono"
             aria-label="Mobile"
+            onClick={(e) => e.stopPropagation()}
           >
             <Link
               href="/#work"

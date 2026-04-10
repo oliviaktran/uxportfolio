@@ -25,7 +25,7 @@ function ProjectRow({ project }: { project: Project }) {
   return (
     <Link
       href={`/work/${project.slug}`}
-      className="group block border-b border-neutral-200/80 py-14 first:pt-4 last:border-b-0 md:py-20"
+      className="group block border-b border-neutral-200/80 py-10 first:pt-2 last:border-b-0 sm:py-12 md:py-20"
     >
       <div className="flex flex-col gap-10 md:flex-row md:items-center md:gap-12 lg:gap-16">
         <div className="relative aspect-[16/10] w-full shrink-0 overflow-hidden rounded-sm bg-neutral-100 md:aspect-[5/3] md:w-[58%] md:max-w-[720px]">
@@ -67,7 +67,7 @@ function ProjectRow({ project }: { project: Project }) {
 
 export function WorksGallery() {
   return (
-    <div className="mx-auto max-w-[1280px] bg-white px-5 py-16 md:px-10 md:py-24">
+    <div className="mx-auto max-w-[1280px] bg-white px-4 py-12 sm:px-5 sm:py-16 md:px-10 md:py-24">
       <div className="flex flex-col">
         {projects.map((project) => (
           <ProjectRow key={project.slug} project={project} />
