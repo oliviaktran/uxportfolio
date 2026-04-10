@@ -30,6 +30,9 @@ const DEFAULT_TILT_X = 14;
 /** Below this (px) from pointer-down we treat as a tap, not a tilt drag */
 const DRAG_THRESHOLD_PX = 10;
 
+/** Delay before nudging visitors about tilt / tap (ms) */
+const PLAYGROUND_HINT_DELAY_MS = 3500;
+
 type Props = {
   images: string[];
   /** Full orbit period in seconds */
@@ -97,6 +100,21 @@ export function EllipsePhotoGallery({
 
   const reducedMotion = usePrefersReducedMotion();
   const [isGrabbing, setIsGrabbing] = useState(false);
+  const [playgroundHintVisible, setPlaygroundHintVisible] = useState(false);
+  const playgroundHintTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const playgroundHintDismissedRef = useRef(false);
+
+  const dismissPlaygroundHint = useCallback(() => {
+    if (playgroundHintDismissedRef.current) return;
+    playgroundHintDismissedRef.current = true;
+    if (playgroundHintTimeoutRef.current) {
+      clearTimeout(playgroundHintTimeoutRef.current);
+      playgroundHintTimeoutRef.current = null;
+    }
+    setPlaygroundHintVisible(false);
+  }, []);
 
   const resyncSlotBillboards = useCallback(
     (axisTiltX: number, axisTiltY: number, billboard: boolean) => {
@@ -145,6 +163,31 @@ export function EllipsePhotoGallery({
     radiiRef.current = { a, b };
   }, [a, b]);
 
+  useEffect(() => {
+    if (images.length === 0) return;
+    playgroundHintDismissedRef.current = false;
+    const hideId = window.requestAnimationFrame(() => {
+      setPlaygroundHintVisible(false);
+    });
+    if (playgroundHintTimeoutRef.current) {
+      clearTimeout(playgroundHintTimeoutRef.current);
+      playgroundHintTimeoutRef.current = null;
+    }
+    playgroundHintTimeoutRef.current = setTimeout(() => {
+      playgroundHintTimeoutRef.current = null;
+      if (!playgroundHintDismissedRef.current) {
+        setPlaygroundHintVisible(true);
+      }
+    }, PLAYGROUND_HINT_DELAY_MS);
+    return () => {
+      cancelAnimationFrame(hideId);
+      if (playgroundHintTimeoutRef.current) {
+        clearTimeout(playgroundHintTimeoutRef.current);
+        playgroundHintTimeoutRef.current = null;
+      }
+    };
+  }, [images.length]);
+
   const slots = useMemo(() => {
     const n = images.length;
     if (n === 0) return [];
@@ -188,6 +231,8 @@ export function EllipsePhotoGallery({
 
   const onPointerDownCapture = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
+      dismissPlaygroundHint();
+
       if (reducedMotion) return;
       if (e.button !== 0) return;
       const target = e.target as HTMLElement | null;
@@ -204,7 +249,7 @@ export function EllipsePhotoGallery({
       };
       setIsGrabbing(true);
     },
-    [reducedMotion],
+    [dismissPlaygroundHint, reducedMotion],
   );
 
   const onPointerMove = useCallback(
@@ -364,6 +409,26 @@ export function EllipsePhotoGallery({
           );
         })}
       </div>
+
+      {playgroundHintVisible ? (
+        <p
+          className={`playground-hint-pop pointer-events-none absolute bottom-3 left-1/2 z-[280] max-w-[min(90%,20rem)] -translate-x-1/2 text-center font-mono text-[11px] font-normal uppercase leading-snug tracking-[0.14em] text-neutral-500 sm:bottom-4 sm:text-[12px] ${
+            reducedMotion ? "playground-hint-pop--static" : ""
+          }`}
+          role="status"
+          aria-live="polite"
+        >
+          {reducedMotion || !interactive ? (
+            <>Click me!</>
+          ) : (
+            <>
+              Rotate me :)
+              <span className="mx-1.5 text-neutral-400">·</span>
+              or click me!
+            </>
+          )}
+        </p>
+      ) : null}
     </div>
   );
 }
