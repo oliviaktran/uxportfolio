@@ -303,7 +303,12 @@ function A4FrontSheet({ imageSrc }: { imageSrc: string | null }) {
             fontSize: a4ParagraphSize,
           }}
         >
-          Throwing clay on a wheel Cafe hopping Playing pickleball or tennis
+          Throwing clay on a wheel
+          <br />
+          Cafe hopping
+          <br />
+          Playing pickleball or tennis
+          <br />
           Learning how to swim...
         </p>
       </div>
